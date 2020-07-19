@@ -28,10 +28,12 @@ class Window(QWidget):
         #defines what resources we are asking from the spotify user are
         scope  = 'user-read-playback-state streaming ugc-image-upload playlist-modify-public'
         self.username = USERNAME
-
         #authenticates the user, so the application can be used
         token = SpotifyOAuth(scope=scope,username=self.username)
-
+        token._open_auth_url()
+        # 'https://accounts.spotify.com/authorize?client_id=57cc6e4d42bd420d89382f499308daa4&redirect_uri=http:%2F%2Fwww.google.com%2F&scope=user-read-playback-state%20streaming%20ugc-image-upload%20playlist-modify-public&response_type=token&state=123'
+        # token.get_access_token()
+        # token = util.prompt_for_user_token(username=self.username)
         #intializes the spotify object
         spotify = spotipy.Spotify(auth_manager=token)
         self.spotifyObject = spotify
@@ -41,6 +43,8 @@ class Window(QWidget):
 
         #keeps track of current song in the playback
         self.currentSong = ['']
+
+        self.dictionary_of_songs = {}
 
     #function to create random playlist and implement it into spoitfy
     def generatePlaylist(self):
@@ -97,26 +101,40 @@ class Window(QWidget):
 
         #returns the lyrics found within the 'p' tag of the website
         return lyrics[0].getText()
+    def getPlaylist(self):
+        playlistInfoPre = self.spotifyObject.user_playlists(user = self.username)
+        playlistInfo = playlistInfoPre['items'][0]
+        playlistItems = self.spotifyObject.playlist_tracks(playlist_id = playlistInfo['id'])
+        # print(json.dumps(playlistItems['items'][0],sort_keys=True,indent=4))
+        # playlistItems['items'][0]'track']['name']
+        self.dictionary_of_songs.clear()
+        iterator_x = 0
+        while iterator_x < len(playlistItems['items']):
+            self.dictionary_of_songs[playlistItems['items'][iterator_x]['track']['name']]=[playlistItems['items'][iterator_x]['track']['uri'],playlistItems['items'][iterator_x]['track']['artists'][0]['name']]
+            iterator_x +=1
+        # print(self.dictionary_of_songs)
     def startPlaying(self):
-        # try:
-        newResults = self.spotifyObject.search(self.songs.currentText(), limit=10, offset=0, type='track', market=None)
-        bruh = newResults['tracks']
-        # print(json.dumps(bruh,sort_keys=True, indent=4))
-        artistPre = bruh['items'][0]['artists']
-        artist = artistPre[0]['name']
-        songURI = bruh['items'][0]['uri']
-        devices1 = self.spotifyObject.devices()
-        devices1['devices'][1]['is_active'] = True
-        self.device = devices1['devices'][1]['id']
-        self.lyrics.setPlainText(self.getLyrics(self.songs.currentText(), artist))
-        self.lyrics.show()
-        # print(json.dumps(self.device,sort_keys=True, indent=4)
-        if self.currentSong[0]!=self.songs.currentText():
-            self.spotifyObject.start_playback(device_id = self.device,uris=[songURI])
-        else:
-            self.spotifyObject.start_playback(device_id = self.device,uris=[songURI],position_ms=self.currentSong[1])
-        # except:
-        #     print('Spotify is not open!')
+        try:
+            devices1 = self.spotifyObject.devices()
+            # print(json.dumps(devices1,sort_keys=True, indent=4))
+            devices1['devices'][1]['is_active'] = True
+            self.device = devices1['devices'][1]['id']
+            self.getPlaylist()
+            song = self.dictionary_of_songs.get(self.songs.currentText())
+            print(json.dumps(self.spotifyObject.audio_analysis(song[0]),sort_keys=True,indent=4))
+            # print(json.dumps(self.device,sort_keys=True, indent=4)
+            if self.currentSong[0]!=self.songs.currentText():
+                self.spotifyObject.start_playback(device_id = self.device,uris=[song[0]])
+
+                #show lyrics
+                self.lyrics.setPlainText(self.getLyrics(self.songs.currentText(), song[1]))
+                self.lyrics.show()
+            else:
+                self.spotifyObject.start_playback(device_id = self.device,uris=[song[0]],position_ms=self.currentSong[1])
+                self.lyrics.setPlainText(self.getLyrics(self.songs.currentText(), song[1]))
+                self.lyrics.show()
+        except:
+            print('Spotify is not open!')
     def pause(self):
         self.spotifyObject.pause_playback(device_id=self.device)
         playBackInfoTemp = self.spotifyObject.current_playback()
