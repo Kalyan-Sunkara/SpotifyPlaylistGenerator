@@ -121,7 +121,6 @@ class Window(QWidget):
             self.device = devices1['devices'][1]['id']
             self.getPlaylist()
             song = self.dictionary_of_songs.get(self.songs.currentText())
-            print(json.dumps(self.spotifyObject.audio_analysis(song[0]),sort_keys=True,indent=4))
             # print(json.dumps(self.device,sort_keys=True, indent=4)
             if self.currentSong[0]!=self.songs.currentText():
                 self.spotifyObject.start_playback(device_id = self.device,uris=[song[0]])
