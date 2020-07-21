@@ -1,0 +1,17 @@
+altgraph==0.17
+beautifulsoup4==4.9.1
+bs4==0.0.1
+certifi==2020.6.20
+chardet==3.0.4
+google==3.0.0
+idna==2.10
+lxml==4.5.2
+macholib==1.14
+PyInstaller==3.6
+PyQt5==5.15.0
+PyQt5-sip==12.8.0
+requests==2.24.0
+six==1.15.0
+soupsieve==2.0.1
+spotipy==2.13.0
+urllib3==1.25.9
