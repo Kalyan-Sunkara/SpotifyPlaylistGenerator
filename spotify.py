@@ -30,10 +30,7 @@ class Window(QWidget):
         self.username = USERNAME
         #authenticates the user, so the application can be used
         token = SpotifyOAuth(scope=scope,username=self.username)
-        token._open_auth_url()
-        # 'https://accounts.spotify.com/authorize?client_id=57cc6e4d42bd420d89382f499308daa4&redirect_uri=http:%2F%2Fwww.google.com%2F&scope=user-read-playback-state%20streaming%20ugc-image-upload%20playlist-modify-public&response_type=token&state=123'
-        # token.get_access_token()
-        # token = util.prompt_for_user_token(username=self.username)
+
         #intializes the spotify object
         spotify = spotipy.Spotify(auth_manager=token)
         self.spotifyObject = spotify
@@ -105,35 +102,47 @@ class Window(QWidget):
         playlistInfoPre = self.spotifyObject.user_playlists(user = self.username)
         playlistInfo = playlistInfoPre['items'][0]
         playlistItems = self.spotifyObject.playlist_tracks(playlist_id = playlistInfo['id'])
-        # print(json.dumps(playlistItems['items'][0],sort_keys=True,indent=4))
-        # playlistItems['items'][0]'track']['name']
+
         self.dictionary_of_songs.clear()
         iterator_x = 0
         while iterator_x < len(playlistItems['items']):
             self.dictionary_of_songs[playlistItems['items'][iterator_x]['track']['name']]=[playlistItems['items'][iterator_x]['track']['uri'],playlistItems['items'][iterator_x]['track']['artists'][0]['name']]
             iterator_x +=1
-        # print(self.dictionary_of_songs)
+
     def startPlaying(self):
         try:
             devices1 = self.spotifyObject.devices()
             # print(json.dumps(devices1,sort_keys=True, indent=4))
-            devices1['devices'][1]['is_active'] = True
-            self.device = devices1['devices'][1]['id']
-            self.getPlaylist()
-            song = self.dictionary_of_songs.get(self.songs.currentText())
-            # print(json.dumps(self.device,sort_keys=True, indent=4)
-            if self.currentSong[0]!=self.songs.currentText():
-                self.spotifyObject.start_playback(device_id = self.device,uris=[song[0]])
+            devices1['devices'][0]['is_active'] = True
+            self.device = devices1['devices'][0]['id']
+        except:
+            print('Something Wrong with devices')
+        self.getPlaylist()
+        song = self.dictionary_of_songs.get(self.songs.currentText())
+        # print(json.dumps(self.spotifyObject.audio_analysis(song[0]),sort_keys=True,indent=4))
+        # print(json.dumps(self.device,sort_keys=True, indent=4)
+        if self.currentSong[0]!=self.songs.currentText():
+            self.spotifyObject.start_playback(device_id = self.device,uris=[song[0]])
 
-                #show lyrics
+            #show lyrics
+            try:
                 self.lyrics.setPlainText(self.getLyrics(self.songs.currentText(), song[1]))
                 self.lyrics.show()
-            else:
+            except:
+                self.lyrics.setPlainText('Lyrics Not Found')
+                self.lyrics.show()
+                print('Something wrong getting lyrics')
+        else:
+            try:
                 self.spotifyObject.start_playback(device_id = self.device,uris=[song[0]],position_ms=self.currentSong[1])
                 self.lyrics.setPlainText(self.getLyrics(self.songs.currentText(), song[1]))
                 self.lyrics.show()
-        except:
-            print('Spotify is not open!')
+            except:
+                self.lyrics.setPlainText('Lyrics Not Found')
+                self.lyrics.show()
+                print('Something wrong getting lyrics')
+        # except:
+        #     print('Spotify is not open!')
     def pause(self):
         self.spotifyObject.pause_playback(device_id=self.device)
         playBackInfoTemp = self.spotifyObject.current_playback()
@@ -151,7 +160,7 @@ class Window(QWidget):
         self.button1 = QPushButton('Genereate Playlist', self)
         self.button2 = QPushButton()
         self.button2.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
-        # self.button2.setStyleSheet("background-color:#44eb4a""QPushButton:pressed { background-color: red }")
+
         self.button2.setStyleSheet("QPushButton { background-color: #44eb4a}"
                       "QPushButton:pressed { background-color: red }" )
         self.button1.setStyleSheet("QPushButton { color: black;background-color: #44eb4a }"
@@ -160,8 +169,6 @@ class Window(QWidget):
         self.button3.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
         self.button3.setStyleSheet("QPushButton { background-color: #44eb4a }"
                       "QPushButton:pressed { background-color: red }" )
-        # self.button3.setIcon(QIcon('/Users/kalyan/PythonPrograms/pngtree-pause-vector-icon-png-image_470715.jpg'))
-        # self.button3.setGeometry(200, 1000, 100, 40)
         self.label2 = QLabel('',self)
         self.label2.setAlignment(Qt.AlignCenter)
         self.label2.hide()
