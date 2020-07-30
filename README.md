@@ -3,3 +3,4 @@ Create a playlist recommended based off of an artist provided by the user utiliz
 
 *PyQT5 used for the Gui portion*
 
+*Flask, python web framework, used for website example*
