@@ -1,0 +1,79 @@
+@keyframes example1 {
+  from {background-color: black;}
+  to {background-color: #44eb4a;}
+}
+
+@keyframes example2
+{
+  from {color: black;}
+  to {color: #44eb4a;}
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+@keyframes fadeIn {
+  0% {opacity:0;}
+  100% {opacity:1;}
+}
+/* body{
+  background-color: black;
+  animation-name: example1;
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+} */
+#outsideDiv{
+  height: 1000px;
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 600% 600%;
+  animation: gradient 10s ease infinite;
+}
+
+#firstDiv {
+  height: 200px;
+  width: 400px;
+  background: black;
+
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin-top: -100px;
+  margin-left: -200px;
+
+  text-align:center;
+  line-height:200px;
+}
+
+#firstHeader{
+  margin-top:20%;
+  margin-left: 25%;
+  margin-right: 25%;
+  margin-bottom: 25%;
+}
+
+.btn{
+  color = black;
+}
+/* body {
+	background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+	background-size: 2000% 2000%;
+	animation: gradient 10s ease infinite;
+} */
+
+
+/* h2{
+    color: black;
+    animation-name: example2;
+    animation-duration: 3s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+} */
