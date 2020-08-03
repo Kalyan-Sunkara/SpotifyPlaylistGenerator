@@ -1,3 +1,13 @@
+"""
+Prerequisites
+    pip3 install spotipy Flask Flask-Session
+    export SPOTIPY_CLIENT_ID=client_id_here
+    export SPOTIPY_CLIENT_SECRET=client_secret_here
+    export SPOTIPY_REDIRECT_URI='http://127.0.0.1:8080' // added to your [app settings](https://developer.spotify.com/dashboard/applications)
+    // on Windows, use `SET` instead of `export`
+Run app.py
+    python3 -m flask run --port=8080
+"""
 
 import os
 from flask import Flask, session, request, redirect, render_template
@@ -6,27 +16,23 @@ import spotipy
 import json
 import uuid
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = os.urandom(64)
-app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SESSION_FILE_DIR'] = './.flask_session/'
+application = Flask(__name__)
+application.config['SECRET_KEY'] = os.urandom(64)
+application.config['SESSION_TYPE'] = 'filesystem'
+application.config['SESSION_FILE_DIR'] = './.flask_session/'
 
 
-Session(app)
+Session(application)
 spotify = ''
 auth_manager=''
 caches_folder = './.spotify_caches/'
 if not os.path.exists(caches_folder):
     os.makedirs(caches_folder)
-# username = 'tamati-us'
-# username = 'woahunicorn'
-scope = 'user-top-read user-read-playback-state streaming ugc-image-upload playlist-modify-public'
-# username = '26wbcozjp146flaztqwhirmqx'
-# auth_manager = spotipy.oauth2.SpotifyOAuth(username=username, scope=scope)
-# spotify = spotipy.Spotify(auth_manager=auth_manager)
 
-@app.route('/', methods=['GET','POST'])
-# @app.route('/login' methods=['POST'])
+scope = 'user-top-read user-read-playback-state streaming ugc-image-upload playlist-modify-public'
+
+
+@application.route('/', methods=['GET','POST'])
 def signIN():
     global spotify
     global auth_manager
@@ -45,55 +51,33 @@ def signIN():
         # Step 2. Display sign in link when no token
         auth_url = auth_manager.get_authorize_url()
         return render_template('signIn.html',auth_url=auth_url)
-        # return f'<h2><a href="{auth_url}">Sign in</a></h2>'
 
     # Step 4. Signed in, display data
-    # spotify = spotipy.Spotify(auth_manager=auth_manager)
+    
     return redirect('/home')
-    # global spotify
-    # if request.method == 'POST':
-    #     user = request.form['user']
-    #     auth_manager = spotipy.oauth2.SpotifyOAuth(username=user, scope=scope)
-    #     spotify = spotipy.Spotify(auth_manager=auth_manager)
-    #     session['token_info'] = auth_manager.get_access_token()
-    #     return redirect('/home')
-    # return render_template('login.html')
 
 
 # @app.route('/')
-@app.route('/home')
+@application.route('/home')
 def index():
     global spotify
     global auth_manager
-    # if request.args.get("code"):
-        # print('hello')
-        # session['token_info'] = auth_manager.get_access_token(request.args["code"])
-        # return redirect('/home')
 
     if not auth_manager.get_cached_token():
         return redirect('/')
-        # auth_url = auth_manager.get_authorize_url()
-        # return f'<h2><a href="{auth_url}">Sign in</a></h2>'
-        # return render_template('signIn.html',auth_url=auth_url)
-        # return redirect('/')
-
-    # print(json.dumps(spotify.me(),sort_keys=True,indent=4))
+        
     name = spotify.me()["display_name"]
     return render_template('home.html',name=name)
-    # part2 = f'<small><a href="/sign_out">[sign out]<a/></small></h2>'
-    # part3 = f'<a href="/playlists">my playlists</a>'
-    # greeting = part1 + part2 + part3
-    # return render_template('home.html',name=name)
 
 
-@app.route('/sign_out')
+@application.route('/sign_out')
 def sign_out():
     os.remove(session_cache_path())
     session.clear()
     return redirect('/')
 
 
-@app.route('/playlists')
+@application.route('/playlists')
 def playlists():
     global spotify
     global auth_manager
@@ -102,24 +86,20 @@ def playlists():
     else:
         playlists1 = spotify.current_user_playlists()
         playlists = []
-        # iterator=0
-        # while x < len(playlist)
+        
         for x in playlists1['items']:
             playlists.append(x['name'])
-            # names = x['name']
-            # playlists = playlists + names
+            
         style = 'background: transparent;'
-        # playlists = playlists1['items'][0]['name']
-        # print(json.dumps(spotify.current_user_playlists(),sort_keys=True,indent=4))
+        
         return render_template('playlists.html',style=style,playlists=playlists)
-               # f'<a href="/">Go Back</a>'
-        # playlists['items'][0]['name']
-@app.route('/topArtists')
+              
+        
+@application.route('/topArtists')
 def topArtists():
     global spotify
     global auth_manager
-    # if not session.get('token_info'):
-    #     return redirect('/')
+    
     if not auth_manager.get_cached_token():
         return redirect('/')
     else:
@@ -127,33 +107,31 @@ def topArtists():
         topArtists = []
         for x in topArtists1['items']:
             topArtists.append(x['name'])
-        # print(json.dumps(topArtists,sort_keys=True,indent=4))
+       
         return render_template('topArtists.html',topArtists=topArtists)
 
-@app.route('/generatePlaylist')
+@application.route('/generatePlaylist')
 def makePlaylist():
     global spotify
     global auth_manager
-    # if not session.get('token_info'):
-    #     return redirect('/')
+    
     if not auth_manager.get_cached_token():
         return redirect('/')
     else:
         data = 'We do not judge who you listen to'
         return render_template('generatePlaylist.html',data=data)
 
-@app.route('/generatePlaylist', methods=['POST'])
+@application.route('/generatePlaylist', methods=['POST'])
 def my_form_post():
     global spotify
-    # global auth_manager
-    #find the artist
+    
     text = request.form['artist']
     results = spotify.search(text,1,0,"artist")
     artist = results['artists']['items'][0]
     artist_uri = artist['uri']
 
     recommendations = spotify.recommendations(seed_artists=[artist_uri], limit=25)
-    #print the content in an easy to read format(derived from JSON)
+    
     track_list = recommendations['tracks']
     list_of_songs = []
     for tracks in track_list:
@@ -176,3 +154,6 @@ def my_form_post():
 
 def session_cache_path():
     return caches_folder + session.get('uuid')
+
+if __name__ =='__main__':
+    application.run(host='0.0.0.0',port=8080, debug=True)
