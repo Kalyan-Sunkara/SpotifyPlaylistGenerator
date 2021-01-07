@@ -30,7 +30,7 @@ itsdangerous==1.1.0
 Jinja2==2.11.2
 jmespath==0.10.0
 jsonschema==3.2.0
-lxml==4.5.2
+lxml==4.6.2
 macholib==1.14
 MarkupSafe==1.1.1
 paramiko==2.7.1
